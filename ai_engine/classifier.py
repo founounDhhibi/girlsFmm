@@ -1,5 +1,6 @@
 from transformers import pipeline
-
+from feature_extractor import extract_features
+from risk_scorer import calculate_risk
 # Global variable to store the model (so we don't reload it every time)
 _classifier = None
 
@@ -50,6 +51,49 @@ def classify_threat(text: str):
     
     # Map model output to our standardized codes
     return LABEL_MAP.get(predicted_label, "unknown"), confidence
+
+
+
+def analyze_text(text: str) -> dict:
+    """
+    SINGLE ENTRY POINT FOR FLASK INTEGRATION
+    Returns a standardized dictionary matching the partner's contract.
+    """
+    # 1. Extract linguistic & contextual features
+    features = extract_features(text)
+    
+    # 2. Classify threat type & get AI confidence
+    threat_type, confidence = classify_threat(text)
+    
+    # 3. Calculate transparent risk score (0-100)
+    risk_result = calculate_risk(threat_type, confidence, features)
+    risk_score = risk_result["score"]
+    
+    # 4. Determine AI recommendation based on risk thresholds
+    if risk_score >= 70:
+        recommendation = "BLOCK"
+    elif risk_score >= 40:
+        recommendation = "REVIEW"
+    else:
+        recommendation = "ALLOW"
+    
+    # 5. Generate explanation (Step 5 will upgrade this to full XAI)
+    explanation = (
+        f"AI classified as '{threat_type}' threat with {confidence:.0%} confidence. "
+        f"Risk score: {risk_score}/100. "
+        f"Key indicators: urgency={features['urgency_score']}, "
+        f"financial_terms={features['financial_score']}, "
+        f"links={features['url_count']}."
+    )
+    
+    # 6. Return exact contract structure
+    return {
+        "threat_type": threat_type,
+        "risk_score": risk_score,
+        "confidence": confidence,
+        "explanation": explanation,
+        "ai_recommendation": recommendation
+    }
  
 if __name__ == "__main__":
     print("--- TESTING CLASSIFIER ---")
@@ -66,3 +110,12 @@ if __name__ == "__main__":
     type2, conf2 = classify_threat(text2)
     print(f"📝 Text: '{text2}'")
     print(f"🤖 AI Verdict: {type2} (Confidence: {conf2:.2%})")
+    
+    print("--- TESTING INTEGRATION CONTRACT ---")
+    
+    test_msg = "URGENT! Your BIAT account is suspended. Click immediately: http://fake-biat.xyz"
+    result = analyze_text(test_msg)
+    
+    print("📦 Contract Output:")
+    for key, value in result.items():
+        print(f"  {key}: {value}")
