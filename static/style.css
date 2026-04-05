@@ -12,6 +12,57 @@ button:hover { opacity: 0.9; }
 .human-controls { background: #fff3e0; padding: 16px; border-radius: 8px; text-align: center; margin-top: 12px; }
 .status-msg { text-align: center; font-weight: 600; margin-top: 16px; font-size: 15px; }
 input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-right: 8px; }
+
+.adversarial-alert {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid #f59e0b;
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    color: #7c2d12;
+    text-align: left;
+}
+
+.adversarial-alert h4 {
+    margin: 0 0 8px 0;
+}
+
+.adversarial-indicators {
+    margin: 8px 0 0 18px;
+    padding: 0;
+}
+
+.pattern-list {
+    display: grid;
+    gap: 10px;
+}
+
+.pattern-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.pattern-name {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.pattern-count {
+    min-width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 700;
+}
 /* ========================================= */
 /* NAVIGATION & DASHBOARD STYLES (APPEND)    */
 /* ========================================= */

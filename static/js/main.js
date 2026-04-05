@@ -27,6 +27,28 @@ if (form) {
                 document.getElementById('res-confidence').textContent = (data.confidence * 100).toFixed(1);
                 document.getElementById('res-explanation').textContent = data.explanation;
                 document.getElementById('res-recommendation').textContent = data.ai_recommendation;
+
+                const adversarial = data.adversarial_detection || {};
+                const alertBox = document.getElementById('adversarial-alert');
+                if (alertBox) {
+                    if (adversarial.is_adversarial || adversarial.is_probe) {
+                        const indicatorList = (adversarial.indicators || [])
+                            .map(indicator => `<li>${indicator.type}: ${indicator.description}</li>`)
+                            .join('');
+                        alertBox.innerHTML = `
+                            <h4>🛡️ Adversarial Alert</h4>
+                            <p><strong>Status:</strong> Probe detected</p>
+                            <p><strong>Detector Confidence:</strong> ${(adversarial.confidence * 100).toFixed(1)}%</p>
+                            <p><strong>Recommended Response:</strong> ${adversarial.recommendation || 'Review manually'}</p>
+                            <ul class="adversarial-indicators">${indicatorList}</ul>
+                        `;
+                        alertBox.style.display = 'block';
+                    } else {
+                        alertBox.innerHTML = '';
+                        alertBox.style.display = 'none';
+                    }
+                }
+
                 document.getElementById('result-section').style.display = 'block';
                 document.getElementById('final-message').textContent = '';
                 document.querySelector('.human-controls').style.display = 'block';
@@ -68,6 +90,25 @@ async function loadDashboard() {
         document.getElementById('stat-pending').textContent = stats.pending;
         document.getElementById('stat-approved').textContent = stats.approved;
         document.getElementById('stat-rejected').textContent = stats.rejected;
+        const probesNode = document.getElementById('stat-probes');
+        if (probesNode) probesNode.textContent = stats.probes_detected ?? 0;
+        const suspiciousNode = document.getElementById('stat-suspicious-ips');
+        if (suspiciousNode) suspiciousNode.textContent = stats.suspicious_ips ?? 0;
+
+        const patternList = document.getElementById('pattern-list');
+        if (patternList) {
+            const patterns = Array.isArray(stats.common_attack_patterns) ? stats.common_attack_patterns : [];
+            if (patterns.length === 0) {
+                patternList.innerHTML = '<p class="loading">No adversarial patterns detected yet.</p>';
+            } else {
+                patternList.innerHTML = patterns.map(pattern => `
+                    <div class="pattern-item">
+                        <span class="pattern-name">${pattern.name}</span>
+                        <span class="pattern-count">${pattern.count}</span>
+                    </div>
+                `).join('');
+            }
+        }
     } catch (e) { console.error('Stats failed:', e); }
 
     // 2. Fetch & render pending queue

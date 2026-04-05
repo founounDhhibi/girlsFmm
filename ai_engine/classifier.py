@@ -36,6 +36,16 @@ def classify_threat(text: str):
     """
     Analyzes text and returns: (threat_type, confidence_score)
     """
+    text = text or ""
+    text_lower = text.lower()
+    words = text_lower.split()
+
+    # Early-safe shortcut for very short, low-complexity benign text.
+    if len(words) <= 3 and not any(
+        kw in text_lower for kw in ["bank", "account", "click", "verify", "urgent", "http", "biat", "tnd"]
+    ):
+        return "safe", 0.95
+
     model = load_model()
     
     # Run the AI analysis
@@ -54,46 +64,11 @@ def classify_threat(text: str):
 
 
 
-def analyze_text(text: str) -> dict:
-    """
-    SINGLE ENTRY POINT FOR FLASK INTEGRATION
-    Returns a standardized dictionary matching the partner's contract.
-    """
-    # 1. Extract linguistic & contextual features
-    features = extract_features(text)
-    
-    # 2. Classify threat type & get AI confidence
-    threat_type, confidence = classify_threat(text)
-    
-    # 3. Calculate transparent risk score (0-100)
-    risk_result = calculate_risk(threat_type, confidence, features)
-    risk_score = risk_result["score"]
-    
-    # 4. Determine AI recommendation based on risk thresholds
-    if risk_score >= 70:
-        recommendation = "BLOCK"
-    elif risk_score >= 40:
-        recommendation = "REVIEW"
-    else:
-        recommendation = "ALLOW"
-    
-    # 5. Generate explanation (Step 5 will upgrade this to full XAI)
-    explanation = (
-        f"AI classified as '{threat_type}' threat with {confidence:.0%} confidence. "
-        f"Risk score: {risk_score}/100. "
-        f"Key indicators: urgency={features['urgency_score']}, "
-        f"financial_terms={features['financial_score']}, "
-        f"links={features['url_count']}."
-    )
-    
-    # 6. Return exact contract structure
-    return {
-        "threat_type": threat_type,
-        "risk_score": risk_score,
-        "confidence": confidence,
-        "explanation": explanation,
-        "ai_recommendation": recommendation
-    }
+def analyze_text(text: str, ip_address: str = None) -> dict:
+    """Backward-compatible wrapper around the contract entry point."""
+    from .threat_classifier import analyze_text as contract_analyze_text
+
+    return contract_analyze_text(text, ip_address=ip_address)
  
 if __name__ == "__main__":
     print("--- TESTING CLASSIFIER ---")
