@@ -1,6 +1,6 @@
 from transformers import pipeline
-from feature_extractor import extract_features
-from risk_scorer import calculate_risk
+from .feature_extractor import extract_features
+from .risk_scorer import calculate_risk
 # Global variable to store the model (so we don't reload it every time)
 _classifier = None
 

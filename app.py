@@ -1,8 +1,19 @@
+# 📦 app.py - CLEAN VERSION
+import sys
+import os
+
+# 🔑 Add project root to Python path
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from flask import Flask, render_template, request, jsonify
 from database import db, Analysis, AuditLog
 from audit_logger import log_event
 from datetime import datetime
-import os
+
+# ✅ Import AI engine ONCE at module level
+from ai_engine.threat_classifier import analyze_text as ai_engine_analyze
 
 # 1. Create Flask app
 app = Flask(__name__)
@@ -38,8 +49,7 @@ def audit_log_page():
 # ==========================================
 
 @app.route('/api/analyze', methods=['POST'])
-def analyze_text():
-    """Receives text → runs AI pipeline → stores result → returns JSON."""
+def analyze_text_route():  # ← Renamed to avoid conflict with imported function
     data = request.get_json()
     if not data or 'text' not in data:
         return jsonify({'error': 'Missing "text" field'}), 400
@@ -48,16 +58,9 @@ def analyze_text():
     if len(text) < 3:
         return jsonify({'error': 'Text too short'}), 400
 
-           # === MOCK AI OUTPUT (Person A will replace this later) ===
-    ai_output = {
-        'threat_type': 'financial',
-        'risk_score': 75.0,
-        'confidence': 0.88,
-        'explanation': 'Mock: Detected urgent financial language and suspicious links.',
-        'ai_recommendation': 'REVIEW'
-    }
-    # ========================================================
-
+    # ✅ Call AI engine (imported at top, no re-import needed)
+    ai_output = ai_engine_analyze(text)
+    
     # Save to DB
     analysis = Analysis(
         message_text=text,
@@ -66,7 +69,7 @@ def analyze_text():
         confidence=ai_output['confidence'],
         explanation=ai_output['explanation'],
         ai_recommendation=ai_output['ai_recommendation'],
-        human_decision=None,  # Forces human review
+        human_decision=None,
         ip_address=request.remote_addr
     )
     db.session.add(analysis)
@@ -92,26 +95,23 @@ def analyze_text():
 
 @app.route('/api/action', methods=['POST'])
 def human_action():
-    """Receives human approve/reject → updates DB → logs decision."""
     data = request.get_json()
     if not data or 'analysis_id' not in data or 'action' not in data:
         return jsonify({'error': 'Missing analysis_id or action'}), 400
 
     analysis_id = data['analysis_id']
-    action = data['action']  # 'approve' or 'reject'
+    action = data['action']
     operator = data.get('operator', 'Anonymous_Operator')
 
     analysis = Analysis.query.get(analysis_id)
     if not analysis:
         return jsonify({'error': 'Analysis not found'}), 404
 
-    # Update DB
     analysis.human_decision = action
     analysis.human_operator = operator
     analysis.decision_timestamp = datetime.utcnow()
     db.session.commit()
 
-    # Log Human Decision
     log_event(
         event_type='human_decision',
         actor='HUMAN',
@@ -129,13 +129,8 @@ def human_action():
     }), 200
 
 
-# ==========================================
-# DASHBOARD DATA ROUTES
-# ==========================================
-
 @app.route('/api/stats')
 def get_stats():
-    """Returns real-time metrics"""
     total = Analysis.query.count()
     pending = Analysis.query.filter_by(human_decision=None).count()
     approved = Analysis.query.filter_by(human_decision='approve').count()
@@ -151,17 +146,16 @@ def get_stats():
 
 @app.route('/api/pending')
 def get_pending():
-    """Returns list of analyses awaiting human decision"""
     pending_analyses = Analysis.query.filter_by(human_decision=None).order_by(Analysis.created_at.desc()).all()
     return jsonify([a.to_dict() for a in pending_analyses])
 
 
 @app.route('/api/audit-data')
 def get_audit_data():
-    """Returns full audit trail"""
     logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).all()
     return jsonify([log.to_dict() for log in logs])
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Disable reloader to prevent import caching issues during dev
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)

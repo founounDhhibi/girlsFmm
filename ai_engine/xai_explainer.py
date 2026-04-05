@@ -61,9 +61,9 @@ def generate_explanation(threat_type: str, confidence: float, features: Dict[str
     
     return explanation
 if __name__ == "__main__":
-    from feature_extractor import extract_features
-    from risk_scorer import calculate_risk
-    from classifier import classify_threat
+    from .feature_extractor import extract_features
+    from .risk_scorer import calculate_risk
+    from .classifier import classify_threat
 
     print("--- TESTING XAI EXPLAINER ---")
     text = "URGENT! Your BIAT account is suspended. Click immediately: http://fake-biat.xyz"

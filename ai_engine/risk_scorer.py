@@ -99,7 +99,7 @@ def _calculate_feature_risk(features: Dict[str, Any]) -> float:
 
 
 if __name__ == "__main__":
-    from feature_extractor import extract_features
+    from .feature_extractor import extract_features
     
     print("--- TESTING RISK SCORER ---")
     
