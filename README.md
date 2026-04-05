@@ -124,6 +124,26 @@ python simulations/attack_scenarios.py
 
 Runs pre-defined Tunisian-context attack scenarios to demonstrate detection efficacy.
 
+## Adversarial Awareness (Latest)
+
+The MVP now includes a 3-layer adversarial defense path:
+
+- Probe Detection: detects confidence-boundary probing and threshold mapping attempts.
+- Confusion Attack Detection: flags contradictory signals designed to evade scoring.
+- IP-Aware Rate Monitoring: identifies rapid probing bursts from the same source.
+
+### Anti-False-Positive Improvements
+
+- Short benign text bypass in classifier for low-complexity safe messages.
+- Confidence-manipulation detection now requires meaningful risk context.
+- French/Tunisian accented letters are excluded from obfuscation counting.
+
+### Run Adversarial Tests
+
+```bash
+python -m ai_engine.tests.test_adversarial
+```
+
 ## Docker Deployment
 
 ```bash
@@ -181,31 +201,31 @@ docker compose -f docker/docker-compose.yml up --build
 girlsFmm/
 +-- app.py
 +-- ai_engine/
-¦   +-- __init__.py
-¦   +-- feature_extractor.py
-¦   +-- risk_scorer.py
-¦   +-- xai_explainer.py
-¦   +-- classifier.py
+ï¿½   +-- __init__.py
+ï¿½   +-- feature_extractor.py
+ï¿½   +-- risk_scorer.py
+ï¿½   +-- xai_explainer.py
+ï¿½   +-- classifier.py
 +-- templates/
-¦   +-- index.html
-¦   +-- result.html
-¦   +-- dashboard.html
-¦   +-- audit_log.html
+ï¿½   +-- index.html
+ï¿½   +-- result.html
+ï¿½   +-- dashboard.html
+ï¿½   +-- audit_log.html
 +-- static/
-¦   +-- style.css
-¦   +-- js/
-¦       +-- main.js
+ï¿½   +-- style.css
+ï¿½   +-- js/
+ï¿½       +-- main.js
 +-- database.py
 +-- audit_logger.py
 +-- simulations/
-¦   +-- __init__.py
-¦   +-- attack_scenarios.py
-¦   +-- test_cases.json
+ï¿½   +-- __init__.py
+ï¿½   +-- attack_scenarios.py
+ï¿½   +-- test_cases.json
 +-- docker/
-¦   +-- Dockerfile
-¦   +-- docker-compose.yml
+ï¿½   +-- Dockerfile
+ï¿½   +-- docker-compose.yml
 +-- tests/
-¦   +-- test_contract.py
+ï¿½   +-- test_contract.py
 +-- requirements.txt
 ```
 
