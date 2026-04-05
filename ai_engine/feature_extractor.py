@@ -26,6 +26,11 @@ def extract_features(text: str) -> Dict[str, any]:
     """
     text_lower = text.lower()         
     words = text_lower.split()         
+    french_accents = set("éèêëàâäùûüçîïôöÉÈÊËÀÂÄÙÛÜÇÎÏÔÖ")
+    special_char_count = sum(
+        (not c.isalnum()) and (not c.isspace()) and (c not in french_accents)
+        for c in text
+    )
     
     features = {
         "length": len(text),
@@ -33,7 +38,7 @@ def extract_features(text: str) -> Dict[str, any]:
         "uppercase_ratio": sum(1 for c in text if c.isupper()) / max(len(text), 1),
         "exclamation_count": text.count("!"),
         "question_count": text.count("?"),
-        "special_char_count": len(re.findall(r'[^a-zA-Z0-9\s]', text)),
+        "special_char_count": special_char_count,
         "url_count": len(re.findall(r'https?://\S+|www\.\S+', text)),
         "email_count": len(re.findall(r'\S+@\S+\.\S+', text)),
         "digit_count": sum(c.isdigit() for c in text),

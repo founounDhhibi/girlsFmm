@@ -63,7 +63,16 @@ class AdversarialDetector:
             or obfuscation_signal
             or uncertain_repetition_signal
         )
-        if in_uncertainty_zone and meaningful_payload and probing_context:
+        if (
+            in_uncertainty_zone
+            and risk_score > 30
+            and (
+                features.get("suspicious_tld")
+                or features.get("urgency_score", 0) >= 2
+            )
+            and meaningful_payload
+            and probing_context
+        ):
             indicators.append({
                 "type": "CONFIDENCE_MANIPULATION",
                 "severity": "MEDIUM",
