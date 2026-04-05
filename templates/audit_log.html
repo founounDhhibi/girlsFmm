@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Log - AI Cyber Human Shield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">🛡️ AI Cyber Human Shield</div>
+        <div class="nav-links">
+            <a href="/">Analyzer</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/audit-log" class="active">Audit Log</a>
+        </div>
+    </nav>
+
+    <main class="audit-container">
+        <h2>🔍 System Audit Trail</h2>
+        <p class="audit-subtitle">Every AI decision and human action is permanently logged.</p>
+        <table class="audit-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>Actor</th>
+                    <th>Event Type</th>
+                    <th>Action</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody id="audit-tbody">
+                <tr><td colspan="6" class="loading">Loading audit logs...</td></tr>
+            </tbody>
+        </table>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadAuditLog);
+    </script>
+</body>
+</html>

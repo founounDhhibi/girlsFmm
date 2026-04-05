@@ -1,23 +1,32 @@
-"""Sample attack scenarios for Person B testing and demo flows."""
+"""
+Tunisian Cyber Threat Scenarios for Demo & Testing
+Person B maintains this file. Contains realistic attack patterns.
+"""
 
-ATTACK_SCENARIOS = [
+SCENARIOS = [
     {
-        "name": "Credential Harvesting",
-        "message": "Urgent: verify your account now at http://example-login.com",
-        "expected_result": "Phishing Alert",
+        "id": 1,
+        "name": "🏦 Phishing BIAT (Financial)",
+        "message": "URGENT: Votre compte BIAT a été suspendu pour activité suspecte. Cliquez immédiatement pour vérifier votre identité: http://biat-secure-verify.bit.ly/xyz123. Contactez-nous au +216 71 123 456."
     },
     {
-        "name": "Password Reset Lure",
-        "message": "Your password will expire today. Confirm immediately.",
-        "expected_result": "Phishing Alert",
+        "id": 2,
+        "name": "🎁 Arnaque Loterie (Financial)",
+        "message": "Félicitations! 🎉 Votre numéro a été sélectionné pour gagner 50,000 TND dans la Loterie Nationale Tunisienne! Pour réclamer votre prix, envoyez vos coordonnées bancaires à lottery-tn@winners-now.com avant minuit!"
     },
     {
-        "name": "Normal Business Email",
-        "message": "Can we reschedule the meeting to tomorrow morning?",
-        "expected_result": "Safe Message",
+        "id": 3,
+        "name": "📢 Fake News Sociale (Social)",
+        "message": "⚠️ ALERTE: Le gouvernement va couper internet demain à 18h! Partagez ce message à tous vos contacts avant qu'il ne soit trop tard! Source: un ami fiable qui travaille au ministère (ne citez pas)."
     },
+    {
+        "id": 4,
+        "name": "😟 Manipulation Psychologique",
+        "message": "Tu penses vraiment que quelqu'un t'aime? Personne ne se soucie de toi. Tu ferais mieux de disparaître. Tout le monde serait mieux sans toi. Personne ne remarquera si tu n'es plus là..."
+    },
+    {
+        "id": 5,
+        "name": "✅ Message Légitime (Safe)",
+        "message": "Salut! Ça va? On se voit demain au café près de l'ENSI à 10h? J'ai hâte de te montrer les photos des vacances! 😊"
+    }
 ]
-
-
-def get_scenarios() -> list[dict]:
-    return ATTACK_SCENARIOS

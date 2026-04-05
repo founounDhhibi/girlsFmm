@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Cyber Human Shield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">🛡️ AI Cyber Human Shield</div>
+        <div class="nav-links">
+            <a href="/">Analyzer</a>
+            <a href="/dashboard" class="active">Dashboard</a>
+            <a href="/audit-log">Audit Log</a>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <section class="stats-grid">
+            <div class="stat-card"><h3>Total Analyzed</h3><p id="stat-total">0</p></div>
+            <div class="stat-card warning"><h3>Pending Review</h3><p id="stat-pending">0</p></div>
+            <div class="stat-card success"><h3>Approved</h3><p id="stat-approved">0</p></div>
+            <div class="stat-card danger"><h3>Rejected</h3><p id="stat-rejected">0</p></div>
+        </section>
+
+        <section class="pending-queue">
+            <h2>⏳ Pending Human Decisions</h2>
+            <div id="pending-list">Loading...</div>
+        </section>
+
+        <!-- DEMO SIMULATION SECTION -->
+        <section class="simulation-panel">
+            <h2>🎬 Demo Simulation</h2>
+            <p>Automatically feed 5 realistic Tunisian threats into the system for jury demo.</p>
+            <button id="btn-run-sim" class="btn-primary">▶️ Run Full Simulation</button>
+            <div id="sim-progress" class="sim-progress" style="display:none;">
+                <p id="sim-status">Preparing...</p>
+                <div class="progress-bar"><div id="sim-bar" class="progress-fill"></div></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+        });
+    </script>
+</body>
+</html>

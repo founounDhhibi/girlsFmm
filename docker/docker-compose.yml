@@ -1,13 +1,20 @@
 version: '3.8'
 
 services:
-  web:
+  cyber-shield:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    container_name: ai-cyber-human-shield
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=development
+      - FLASK_ENV=production
+      - DATABASE_URL=sqlite:////app/data/cyber_shield.db
     volumes:
-      - ..:/app
+      - app_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  app_data:
+    driver: local
