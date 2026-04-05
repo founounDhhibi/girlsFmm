@@ -1,63 +1,121 @@
-"""Risk scoring logic for suspicious messages."""
+from typing import Dict, Any
 
-from __future__ import annotations
+# ⚖️ Weights aligned with cybersecurity risk frameworks (NIST/ISO 27005)
+WEIGHTS = {
+    "threat_severity": 0.40,
+    "model_confidence": 0.30,
+    "feature_indicators": 0.30
+}
 
-from dataclasses import dataclass
-from typing import Dict
+# 📊 Base risk per threat type (Financial = highest real-world impact)
+SEVERITY_BASE = {
+    "financial": 0.90,
+    "psychological": 0.75,
+    "social": 0.60,
+    "safe": 0.05
+}
 
+def calculate_risk(threat_type: str, confidence: float, features: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Calculates a transparent risk score (0-100) using a weighted formula.
+    Formula: (Severity × 40%) + (Confidence × 30%) + (Feature Risk × 30%)
+    """
+    # 1️⃣ Threat Severity Component (0.0 to 1.0)
+    base_severity = SEVERITY_BASE.get(threat_type, 0.5)
 
-@dataclass
-class RiskBreakdown:
-    keyword_score: float
-    urgency_score: float
-    structure_score: float
-    final_score: float
+    # 2️⃣ Feature Risk Component (0.0 to 1.0)
+    feature_risk = _calculate_feature_risk(features)
 
-    def to_dict(self) -> Dict[str, float]:
-        return {
-            "keyword_score": self.keyword_score,
-            "urgency_score": self.urgency_score,
-            "structure_score": self.structure_score,
-            "final_score": self.final_score,
-        }
-
-
-class RiskScorer:
-    """Combine message signals into a normalized 0-1 risk score."""
-
-    phishing_keywords = (
-        "verify",
-        "password",
-        "urgent",
-        "click",
-        "account",
-        "confirm",
-        "suspended",
-        "limited",
-        "login",
-        "security",
+    # 3️⃣ Combine using transparent weights
+    raw_score = (
+        base_severity * WEIGHTS["threat_severity"] +
+        confidence * WEIGHTS["model_confidence"] +
+        feature_risk * WEIGHTS["feature_indicators"]
     )
 
-    def score(self, message: str, tokens: list[str], feature_map: Dict[str, float | int | bool]) -> RiskBreakdown:
-        lower_message = (message or "").lower()
-        token_hits = sum(1 for token in tokens if token in self.phishing_keywords)
-        keyword_score = min(1.0, token_hits / max(1, len(tokens) or 1) * 3)
+    # Normalize to 0-100 scale
+    risk_score = min(max(raw_score * 100, 0), 100)
 
-        urgency_score = float(feature_map.get("urgency_score", 0.0))
-        if "!" in lower_message:
-            urgency_score = min(1.0, urgency_score + 0.15)
+    # 4️⃣ Determine Level & UI Color
+    if risk_score < 30:
+        level, color = "LOW", "green"
+    elif risk_score < 60:
+        level, color = "MEDIUM", "orange"
+    elif risk_score < 80:
+        level, color = "HIGH", "red"
+    else:
+        level, color = "CRITICAL", "darkred"
 
-        structure_score = 0.0
-        if feature_map.get("has_url"):
-            structure_score += 0.35
-        if feature_map.get("has_email"):
-            structure_score += 0.1
-        if float(feature_map.get("uppercase_ratio", 0.0)) > 0.35:
-            structure_score += 0.2
-        if float(feature_map.get("digit_ratio", 0.0)) > 0.2:
-            structure_score += 0.15
-        if int(feature_map.get("word_count", 0)) <= 4:
-            structure_score += 0.1
+    # 5️⃣ Return structured object for XAI & Dashboard
+    return {
+        "score": round(risk_score, 2),
+        "level": level,
+        "color": color,
+        "breakdown": {
+            "threat_severity": round(base_severity * 100, 2),
+            "confidence": round(confidence * 100, 2),
+            "feature_risk": round(feature_risk * 100, 2)
+        }
+    }
 
-        final_score = min(1.0, (keyword_score * 0.45) + (urgency_score * 0.25) + (structure_score * 0.30))
-        return RiskBreakdown(keyword_score, urgency_score, min(1.0, structure_score), final_score)
+def _calculate_feature_risk(features: Dict[str, Any]) -> float:
+    """
+    Converts linguistic features into a risk contribution score (0.0 to 1.0).
+    Each condition adds a risk factor. We average them to avoid single-point spikes.
+    """
+    risk_factors = []
+
+    # High urgency pressure
+    if features.get("urgency_score", 0) >= 3:
+        risk_factors.append(0.85)
+    
+    # Financial/banking language
+    if features.get("financial_score", 0) >= 2:
+        risk_factors.append(0.90)
+    
+    # Multiple links (higher redirect risk)
+    if features.get("url_count", 0) >= 2:
+        risk_factors.append(0.75)
+    
+    # 🇹 LOCAL CONTEXT: Tunisian bank + suspicious link = classic phishing pattern
+    if features.get("tunisian_bank_mentions", 0) >= 1 and features.get("url_count", 0) >= 1:
+        risk_factors.append(0.95)
+    
+    # Aggressive capitalization (shouting/pressure)
+    if features.get("uppercase_ratio", 0) > 0.4:
+        risk_factors.append(0.60)
+    
+    # Suspicious domain extension
+    if features.get("suspicious_tld"):
+        risk_factors.append(0.70)
+    
+    # Local phone number in unsolicited message
+    if features.get("tunisian_phone"):
+        risk_factors.append(0.50)
+
+    # Average triggered risk factors, or return safe baseline
+    return sum(risk_factors) / len(risk_factors) if risk_factors else 0.20
+
+
+
+if __name__ == "__main__":
+    from ai_engine.feature_extractor import extract_features
+    
+    print("--- TESTING RISK SCORER ---")
+    
+    # Test 1: High-Risk Tunisian Phishing
+    text1 = "URGENT! Your BIAT account is suspended. Click immediately: http://fake-biat.xyz"
+    feat1 = extract_features(text1)
+    risk1 = calculate_risk("financial", 0.7418, feat1)
+    print(f"📝 Input: '{text1[:40]}...'")
+    print(f" Risk: {risk1['score']}/100 ({risk1['level']})")
+    print(f"📊 Breakdown: {risk1['breakdown']}")
+    print("-" * 50)
+    
+    # Test 2: Low-Risk Safe Message
+    text2 = "Hello team, meeting tomorrow at 10am in room B."
+    feat2 = extract_features(text2)
+    risk2 = calculate_risk("safe", 0.4523, feat2)
+    print(f"📝 Input: '{text2}'")
+    print(f"🎯 Risk: {risk2['score']}/100 ({risk2['level']})")
+    print(f"📊 Breakdown: {risk2['breakdown']}")
