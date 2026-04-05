@@ -3,20 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Cyber Human Shield</title>
+    <title>Analyzer - AI Cyber Human Shield</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>🛡️ AI Cyber Human Shield</h1>
-        <p class="subtitle">AI Augmented Cyber Defense, but Human Controlled</p>
+    <!-- NAVIGATION BAR -->
+    <nav class="top-nav">
+        <div class="nav-brand">🛡️ AI Cyber Human Shield</div>
+        <div class="nav-links">
+            <a href="/" class="active">Analyzer</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/audit-log">Audit Log</a>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="container">
+        <h1>🔍 Analyze a Message</h1>
+        <p class="subtitle">Paste an email, SMS, or social media post to detect cyber threats.</p>
         
         <form id="analysis-form">
-            <textarea id="message-input" placeholder="Paste email, SMS, or social media post here..." rows="4"></textarea>
-            <button type="submit">🔍 Analyze Threat</button>
+            <textarea id="message-input" placeholder="Example: URGENT! Your BIAT account will be locked. Click: http://bit.ly/xyz" rows="5"></textarea>
+            <button type="submit" class="btn-primary">🔍 Analyze Threat</button>
         </form>
 
-        <div id="result-section" style="display:none;">
+        <div id="result-section" style="display:none; margin-top:20px;">
             <div class="card result-card">
                 <h3>📊 AI Analysis Result</h3>
                 <p><strong>Threat Type:</strong> <span id="res-threat"></span></p>
@@ -28,13 +39,14 @@
 
             <div class="human-controls">
                 <p>⚠️ AI proposes. <strong>You decide.</strong></p>
-                <input type="text" id="operator-name" placeholder="Operator Name">
+                <input type="text" id="operator-name" placeholder="Enter your operator name">
                 <button class="btn-approve" onclick="submitAction('approve')">✅ Approve</button>
                 <button class="btn-reject" onclick="submitAction('reject')">❌ Reject</button>
             </div>
             <p id="final-message" class="status-msg"></p>
         </div>
-    </div>
+    </main>
+
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
